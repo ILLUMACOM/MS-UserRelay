@@ -1,4 +1,4 @@
-FROM node:18-alpine AS runtime
+FROM node:18-alpine AS builder
 
 RUN apk --no-cache add curl && npm install --global pm2@5
 
