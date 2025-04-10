@@ -2,7 +2,7 @@
 
 ##############################################
 ## 🔨 Build Stage
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /directus
 ARG TARGETPLATFORM
@@ -18,7 +18,7 @@ RUN <<EOF
 EOF
 
 COPY package.json .
-RUN corepack enable && corepack prepare
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 COPY pnpm-lock.yaml .
 RUN pnpm fetch
@@ -40,7 +40,7 @@ EOF
 
 ##############################################
 ## 🚀 Runtime Stage
-FROM node:18-alpine AS runtime
+FROM node:22-alpine AS runtime
 
 RUN apk --no-cache add curl && npm install --global pm2@5
 
