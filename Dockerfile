@@ -26,7 +26,7 @@ RUN pnpm fetch
 COPY . .
 
 RUN <<EOF
-  pnpm install --recursive --offline --frozen-lockfile
+  pnpm install --recursive --offline --frozen-lockfile --no-optional
   npm_config_workspace_concurrency=1 pnpm run build
   pnpm --filter directus deploy --prod dist
   cd dist
@@ -57,6 +57,5 @@ ENV \
 COPY --from=builder --chown=node:node /directus/ecosystem.config.cjs .
 COPY --from=builder --chown=node:node /directus/dist .
 
-CMD : \
-  && node cli.js bootstrap \
-  && pm2-runtime start ecosystem.config.cjs ;
+# PM2 will start the official "directus start" command from ecosystem.config.cjs
+CMD ["pm2-runtime", "start", "ecosystem.config.cjs"]
