@@ -9,14 +9,18 @@ services:
       - ./uploads:/directus/uploads
       - ./extensions:/directus/extensions
       - ./templates:/directus/templates
-      - ./certs:/certs:ro
     environment:
       KEY: ${KEY}
       SECRET: ${SECRET}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       DB_CLIENT: pg
-      DB_CONNECTION_STRING: ${DB_CONNECTION_STRING}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_SSL__CA: ${DB_SSL__CA}
       WEBSOCKETS_ENABLED: ${WEBSOCKETS_ENABLED}
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8055/admin/login"]
