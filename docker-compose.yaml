@@ -1,68 +1,30 @@
+version: '3.8'
+
 services:
   directus:
-    image: 'directus/directus:11'
+    image: directus/directus:11
     ports:
-      - '8055:8055'
+      - 8055:8055
     volumes:
-      - '/data/coolify/applications/u4c400c8gow0g4wk00og0ck4/uploads:/directus/uploads'
-      - '/data/coolify/applications/u4c400c8gow0g4wk00og0ck4/extensions:/directus/extensions'
-      - '/data/coolify/applications/u4c400c8gow0g4wk00og0ck4/templates:/directus/templates'
-      - '/data/coolify/applications/u4c400c8gow0g4wk00og0ck4/certs:/certs'
+      - ./uploads:/directus/uploads
+      - ./extensions:/directus/extensions
+      - ./templates:/directus/templates
+      - ./certs:/certs:ro
     environment:
-      KEY: '${KEY}'
-      SECRET: '${SECRET}'
-      ADMIN_EMAIL: '${ADMIN_EMAIL}'
-      ADMIN_PASSWORD: '${ADMIN_PASSWORD}'
+      KEY: ${KEY}
+      SECRET: ${SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       DB_CLIENT: pg
-      DB_CONNECTION_STRING: '${DB_CONNECTION_STRING}'
-      WEBSOCKETS_ENABLED: '${WEBSOCKETS_ENABLED}'
-      COOLIFY_BRANCH: '"main"'
-      COOLIFY_RESOURCE_UUID: u4c400c8gow0g4wk00og0ck4
-      COOLIFY_CONTAINER_NAME: directus-u4c400c8gow0g4wk00og0ck4-034810693418
-      COOLIFY_URL: 'http://mckwok0kgcogggws0g0wcco0.147.182.230.219.sslip.io'
-      COOLIFY_FQDN: mckwok0kgcogggws0g0wcco0.147.182.230.219.sslip.io
+      DB_CONNECTION_STRING: ${DB_CONNECTION_STRING}
+      WEBSOCKETS_ENABLED: ${WEBSOCKETS_ENABLED}
     healthcheck:
-      test:
-        - CMD
-        - wget
-        - '-q'
-        - '--spider'
-        - 'http://localhost:8055/admin/login'
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8055/admin/login"]
       interval: 5s
       timeout: 20s
       retries: 10
-    container_name: directus-u4c400c8gow0g4wk00og0ck4-034810693418
-    restart: unless-stopped
-    labels:
-      - coolify.managed=true
-      - coolify.version=4.0.0-beta.407
-      - coolify.applicationId=3
-      - coolify.type=application
-      - coolify.name=directus-u4c400c8gow0g4wk00og0ck4-034810693418
-      - coolify.resourceName=i-l-l-u-m-a-c-o-m-m-s-user-relaymain-u4c400c8gow0g4wk00og0ck4
-      - coolify.projectName=ms-userrelay
-      - coolify.serviceName=i-l-l-u-m-a-c-o-m-m-s-user-relaymain-u4c400c8gow0g4wk00og0ck4
-      - coolify.environmentName=production
-      - coolify.pullRequestId=0
-      - traefik.enable=true
-      - traefik.http.middlewares.gzip.compress=true
-      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
-      - traefik.http.routers.http-0-u4c400c8gow0g4wk00og0ck4-directus.entryPoints=http
-      - traefik.http.routers.http-0-u4c400c8gow0g4wk00og0ck4-directus.middlewares=gzip
-      - 'traefik.http.routers.http-0-u4c400c8gow0g4wk00og0ck4-directus.rule=Host(`mckwok0kgcogggws0g0wcco0.147.182.230.219.sslip.io`) && PathPrefix(`/`)'
-      - 'caddy_0.encode=zstd gzip'
-      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams}}'
-      - 'caddy_0.handle_path=/*'
-      - caddy_0.header=-Server
-      - 'caddy_0.try_files={path} /index.html /index.php'
-      - 'caddy_0=http://mckwok0kgcogggws0g0wcco0.147.182.230.219.sslip.io'
-      - caddy_ingress_network=u4c400c8gow0g4wk00og0ck4
-    networks:
-      u4c400c8gow0g4wk00og0ck4: null
-volumes: {  }
-networks:
-  u4c400c8gow0g4wk00og0ck4:
-    name: u4c400c8gow0g4wk00og0ck4
-    external: true
-configs: {  }
-secrets: {  }
+
+volumes:
+  uploads:
+  extensions:
+  templates:
