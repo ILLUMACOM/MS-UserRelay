@@ -27,6 +27,7 @@ RUN pnpm install --frozen-lockfile --offline --no-optional && \
   pnpm --filter directus deploy --prod dist && \
   cd dist && \
   node -e 'const fs=require("fs");const f="package.json",{name,version,type,exports,bin}=require(`./${f}`),{packageManager}=require(`../${f}`);fs.writeFileSync(f,JSON.stringify({name,version,type,exports,bin,packageManager},null,2));' && \
+  mkdir -p dist/extensions/storage/s3 && cp -r ./extensions/storage/s3 dist/extensions/storage/ && \
   mkdir -p database extensions uploads
 
 ##############################################
