@@ -21,6 +21,8 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_SSL__CA: ${DB_SSL__CA}
+      DB_SSL__REJECT_UNAUTHORIZED: ${DB_SSL__REJECT_UNAUTHORIZED}
+      DB_SSL__REQUIRE: ${DB_SSL__REQUIRE}
       WEBSOCKETS_ENABLED: ${WEBSOCKETS_ENABLED}
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8055/admin/login"]
