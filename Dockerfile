@@ -4,58 +4,52 @@
 ## 🔨 Build Stage
 FROM node:22-alpine AS builder
 
-WORKDIR /directus
-ARG TARGETPLATFORM
+WORKDIR /app
 ENV NODE_OPTIONS=--max-old-space-size=8192
 
-# Install curl + build tools for arm64 if needed
-RUN <<EOF
-  apk --no-cache add curl
-  if [ "$TARGETPLATFORM" = 'linux/arm64' ]; then
-    apk --no-cache add python3 build-base
-    ln -sf /usr/bin/python3 /usr/bin/python
+# Install build tools only if needed (arm64 compatibility)
+ARG TARGETPLATFORM
+RUN apk --no-cache add curl && \
+  if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+    apk --no-cache add python3 build-base && \
+    ln -sf /usr/bin/python3 /usr/bin/python; \
   fi
-EOF
 
-COPY package.json .
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Enable and configure pnpm
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable && corepack prepare pnpm@latest --activate && pnpm fetch
 
-COPY pnpm-lock.yaml .
-RUN pnpm fetch
-
+# Copy source code and build
 COPY . .
 
-RUN <<EOF
-  pnpm install --recursive --offline --frozen-lockfile --no-optional
-  npm_config_workspace_concurrency=1 pnpm run build
-  pnpm --filter directus deploy --prod dist
-  cd dist
-  node -e '
-    const fs = require("fs");
-    const f = "package.json", {name, version, type, exports, bin} = require(`./${f}`), {packageManager} = require(`../${f}`);
-    fs.writeFileSync(f, JSON.stringify({name, version, type, exports, bin, packageManager}, null, 2));
-  '
+RUN pnpm install --frozen-lockfile --offline --no-optional && \
+  pnpm run build && \
+  pnpm --filter directus deploy --prod dist && \
+  cd dist && \
+  node -e 'const fs=require("fs");const f="package.json",{name,version,type,exports,bin}=require(`./${f}`),{packageManager}=require(`../${f}`);fs.writeFileSync(f,JSON.stringify({name,version,type,exports,bin,packageManager},null,2));' && \
   mkdir -p database extensions uploads
-EOF
 
 ##############################################
 ## 🚀 Runtime Stage
 FROM node:22-alpine AS runtime
 
-RUN apk --no-cache add curl && npm install --global pm2@5
+# Install PM2 only
+RUN apk --no-cache add curl && npm install -g pm2@5
 
+# Switch to non-root user for safety
 USER node
-WORKDIR /directus
+WORKDIR /app
+
+# Basic runtime ENV
+ENV NODE_ENV=production \
+    NPM_CONFIG_UPDATE_NOTIFIER=false \
+    WEBSOCKETS_ENABLED=true
+
+# Copy build artifacts
+COPY --from=builder --chown=node:node /app/ecosystem.config.cjs .
+COPY --from=builder --chown=node:node /app/dist .
 
 EXPOSE 8055
 
-ENV \
-  NODE_ENV="production" \
-  NPM_CONFIG_UPDATE_NOTIFIER="false" \
-  WEBSOCKETS_ENABLED="true"
-
-COPY --from=builder --chown=node:node /directus/ecosystem.config.cjs .
-COPY --from=builder --chown=node:node /directus/dist .
-
-# PM2 will start the official "directus start" command from ecosystem.config.cjs
+# Launch Directus via PM2
 CMD ["pm2-runtime", "start", "ecosystem.config.cjs"]
